@@ -6,8 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.expensetracker.presentation.ui.screen.StatsScreen
-import com.example.expensetrackertest.presentation.ui.screen.AddEditExpenseScreen
-import com.example.expensetrackertest.presentation.ui.screen.ExpenseListScreen
+import com.example.expensetracker.presentation.ui.screen.AddEditExpenseScreen
+import com.example.expensetracker.presentation.ui.screen.ExpenseListScreen
 
 @Composable
 fun ExpenseTrackerNavGraph(
