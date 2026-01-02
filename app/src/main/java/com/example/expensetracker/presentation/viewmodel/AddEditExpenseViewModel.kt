@@ -20,7 +20,7 @@ class AddEditExpenseViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val expenseId: Long =
-        savedStateHandle.get<String>("expenseId")?.toLongOrNull() ?: 0L
+        savedStateHandle.get<Long>("expenseId") ?: -1L
 
     private val _uiState = MutableStateFlow(AddEditExpenseUiState())
     val uiState = _uiState.asStateFlow()
@@ -70,11 +70,11 @@ class AddEditExpenseViewModel @Inject constructor(
     }
 
     fun updateAmount(amount: String) {
-        // Validate amount input
+
         val isValid = amount.isEmpty() ||
                 amount.matches(Regex("^\\d*\\.?\\d*$")) &&
                 amount.count { it == '.' } <= 1 &&
-                amount.length <= 10 // Reasonable limit
+                amount.length <= 10
 
         if (isValid) {
             _uiState.value = _uiState.value.copy(
@@ -90,10 +90,9 @@ class AddEditExpenseViewModel @Inject constructor(
     }
 
     fun updateDate(date: Date) {
-        // Validate date (not in the future for expenses, reasonable range)
         val today = Date()
-        val maxFutureDate = Date(today.time + (365L * 24 * 60 * 60 * 1000)) // 1 year ahead
-        val minDate = Date(today.time - (10L * 365 * 24 * 60 * 60 * 1000)) // 10 years ago
+        val maxFutureDate = Date(today.time + (365L * 24 * 60 * 60 * 1000))
+        val minDate = Date(today.time - (10L * 365 * 24 * 60 * 60 * 1000))
 
         if (date.after(minDate) && date.before(maxFutureDate)) {
             _uiState.value = _uiState.value.copy(date = date)
@@ -101,7 +100,7 @@ class AddEditExpenseViewModel @Inject constructor(
     }
 
     fun updateDescription(description: String) {
-        if (description.length <= 500) { // Reasonable limit
+        if (description.length <= 500) {
             _uiState.value = _uiState.value.copy(description = description)
         }
     }
@@ -116,7 +115,6 @@ class AddEditExpenseViewModel @Inject constructor(
                 val state = _uiState.value
                 _uiState.value = state.copy(isLoading = true, error = null)
 
-                // Enhanced validation
                 val validationError = validateInput(state)
                 if (validationError != null) {
                     _uiState.value = state.copy(
