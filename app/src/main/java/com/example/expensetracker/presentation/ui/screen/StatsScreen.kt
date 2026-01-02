@@ -1,8 +1,9 @@
 package com.example.expensetracker.presentation.ui.screen
 
-
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,14 +11,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-
 import com.example.expensetracker.presentation.viewmodel.ExpenseListViewModel
+import com.example.expensetracker.ui.theme.*
+import com.example.expensetracker.presentation.ui.component.DonutChart
+import com.example.expensetracker.presentation.ui.component.CategoryLegendItem
 
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,15 +30,36 @@ fun StatsScreen(
 ) {
     val stats by viewModel.expenseStats.collectAsState()
 
+    var animationPlayed by remember { mutableStateOf(false) }
+    val animFloat by animateFloatAsState(
+        targetValue = if (animationPlayed) 1f else 0f,
+        animationSpec = tween(durationMillis = 800, delayMillis = 100, easing = LinearOutSlowInEasing),
+        label = "chartAnimation"
+    )
+
+    LaunchedEffect(key1 = true) {
+        animationPlayed = true
+    }
+
     Scaffold(
+        containerColor = AppBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Statistics") },
+                title = {
+                    Text(
+                        "Spending Analysis",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = TextPrimary)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground)
             )
         }
     ) { paddingValues ->
@@ -45,155 +68,84 @@ fun StatsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Overview Card
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardBackground),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp)
                     ) {
-                        Text(
-                            "Overview",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+                        DonutChart(
+                            data = stats.categoryBreakdown,
+                            totalAmount = stats.totalExpenses,
+                            animationProgress = animFloat
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            StatItem(
-                                label = "Total Income",
-                                value = String.format("%.2f", stats.totalIncome),
-                                color = Color(0xFF4CAF50)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Total Spent",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = TextSecondary
                             )
-                            StatItem(
-                                label = "Total Expenses",
-                                value = String.format("%.2f", stats.totalExpenses),
-                                color = Color(0xFFFF5252)
+                            Text(
+                                text = String.format("%.0f", stats.totalExpenses),
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPrimary
+                                )
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        StatItem(
-                            label = "Current Balance",
-                            value = String.format("%.2f", stats.balance),
-                            color = if (stats.balance >= 0) Color(0xFF4CAF50) else Color(0xFFFF5252)
-                        )
                     }
                 }
             }
 
-            // Category Breakdown
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardBackground)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
-                            "Expenses by Category",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+                            "Category Breakdown",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
 
                         if (stats.categoryBreakdown.isEmpty()) {
                             Text(
-                                "No expense data available",
+                                "No expense data yet",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = TextSecondary
                             )
                         } else {
-                            stats.categoryBreakdown.forEach { (category, amount) ->
-                                CategoryBar(
+                            val sortedData = stats.categoryBreakdown.toList().sortedByDescending { (_, value) -> value }
+
+                            sortedData.forEach { (category, amount) ->
+                                CategoryLegendItem(
                                     category = category,
                                     amount = amount,
                                     totalAmount = stats.totalExpenses
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun StatItem(
-    label: String,
-    value: String,
-    color: Color
-) {
-    Column {
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            value,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
-    }
-}
-
-@SuppressLint("DefaultLocale")
-@Composable
-fun CategoryBar(
-    category: String,
-    amount: Double,
-    totalAmount: Double
-) {
-    val percentage = if (totalAmount > 0) (amount / totalAmount) * 100 else 0.0
-
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                category,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                String.format("%.2f", amount),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
-            )
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(fraction = (percentage / 100).toFloat())
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.primary)
-            )
-        }
-        Text(
-            "${String.format("%.1f", percentage)}%",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

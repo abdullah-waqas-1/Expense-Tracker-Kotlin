@@ -2,9 +2,11 @@ package com.example.expensetracker.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.expensetracker.presentation.ui.screen.StatsScreen
 import com.example.expensetracker.presentation.ui.screen.AddEditExpenseScreen
 import com.example.expensetracker.presentation.ui.screen.ExpenseListScreen
@@ -15,23 +17,24 @@ fun ExpenseTrackerNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "expense_list"
+        startDestination = Screen.ExpenseList.route
     ) {
-        composable("expense_list") {
+
+        composable(route = Screen.ExpenseList.route) {
             ExpenseListScreen(
                 onNavigateToAddExpense = {
-                    navController.navigate("add_expense")
+                    navController.navigate(Screen.AddExpense.route)
                 },
                 onNavigateToEditExpense = { expenseId ->
-                    navController.navigate("edit_expense/$expenseId")
+                    navController.navigate(Screen.EditExpense.createRoute(expenseId))
                 },
                 onNavigateToStats = {
-                    navController.navigate("stats")
+                    navController.navigate(Screen.Stats.route)
                 }
             )
         }
 
-        composable("add_expense") {
+        composable(route = Screen.AddExpense.route) {
             AddEditExpenseScreen(
                 onNavigateBack = {
                     navController.popBackStack()
@@ -39,7 +42,15 @@ fun ExpenseTrackerNavGraph(
             )
         }
 
-        composable("edit_expense/{expenseId}") {
+        composable(
+            route = Screen.EditExpense.route,
+            arguments = listOf(
+                navArgument("expenseId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
+        ) {
             AddEditExpenseScreen(
                 onNavigateBack = {
                     navController.popBackStack()
@@ -47,7 +58,7 @@ fun ExpenseTrackerNavGraph(
             )
         }
 
-        composable("stats") {
+        composable(route = Screen.Stats.route) {
             StatsScreen(
                 onNavigateBack = {
                     navController.popBackStack()
