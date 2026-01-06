@@ -14,7 +14,7 @@ val expenseCategories = listOf(
     Category("Grocery", "\uD83D\uDED2", 0xFF6BCB77),
     Category("Bills", "\uD83D\uDCDD", 0xFF95E1D3),
     Category("Healthcare", "\uD83C\uDFE5", 0xFFFF8B94),
-    Category("Hostel", "\uD83C\uDFE0", 0xFFA8E6CF),
+    Category("Flat", "\uD83C\uDFE0", 0xFFA8E6CF),
     Category("Other", "\uD83D\uDCCC", 0xFFC7CEEA)
 )
 

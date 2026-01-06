@@ -55,12 +55,40 @@ fun AddEditExpenseScreen(
     Scaffold(
         containerColor = AppBackground,
         topBar = {
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 40.dp, bottom = 16.dp, start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color.White).border(1.dp, DividerColor, RoundedCornerShape(12.dp)).clickable(onClick = onNavigateBack), contentAlignment = Alignment.Center) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(onClick = onNavigateBack)
+                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = TextSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Back",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextSecondary
+                    )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(text = if (uiState.isEditMode) "Edit Transaction" else "New Transaction", style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary))
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (uiState.isEditMode) "Edit Transaction" else "New Transaction",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    ),
+                    modifier = Modifier.padding(start = 4.dp)
+                )
             }
         },
         bottomBar = {

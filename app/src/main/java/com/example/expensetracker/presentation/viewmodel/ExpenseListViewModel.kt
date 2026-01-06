@@ -57,15 +57,27 @@ class ExpenseListViewModel @Inject constructor(
         emptyList()
     )
 
-    val expenseStats = repository.getExpenseStats()
-        .catch { throwable ->
-            _error.value = "Failed to load statistics: ${throwable.message}"
-        }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            ExpenseStats(0.0, 0.0, 0.0, emptyMap())
+    val expenseStats = expenses.map { filteredList ->
+        val totalIncome = filteredList.filter { it.isIncome }.sumOf { it.amount }
+        val totalExpense = filteredList.filter { !it.isIncome }.sumOf { it.amount }
+        val balance = totalIncome - totalExpense
+
+        val categoryBreakdown = filteredList
+            .filter { !it.isIncome }
+            .groupBy { it.category }
+            .mapValues { entry -> entry.value.sumOf { it.amount } }
+
+        ExpenseStats(
+            totalExpenses = totalExpense,
+            totalIncome = totalIncome,
+            balance = balance,
+            categoryBreakdown = categoryBreakdown
         )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        ExpenseStats(0.0, 0.0, 0.0, emptyMap())
+    )
 
     fun deleteExpense(expense: Expense) {
         viewModelScope.launch {
