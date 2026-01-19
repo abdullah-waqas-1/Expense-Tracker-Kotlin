@@ -7,13 +7,13 @@ import java.util.Date
 
 @Dao
 interface ExpenseDao {
-    @Query("SELECT * FROM expenses ORDER BY date DESC")
+    @Query("SELECT * FROM expenses ORDER BY date DESC, createdAt DESC")
     fun getAllExpenses(): Flow<List<Expense>>
 
-    @Query("SELECT * FROM expenses WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+    @Query("SELECT * FROM expenses WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC, createdAt DESC")
     fun getExpensesBetweenDates(startDate: Date, endDate: Date): Flow<List<Expense>>
 
-    @Query("SELECT * FROM expenses WHERE category = :category ORDER BY date DESC")
+    @Query("SELECT * FROM expenses WHERE category = :category ORDER BY date DESC, createdAt DESC")
     fun getExpensesByCategory(category: String): Flow<List<Expense>>
 
     @Query("SELECT * FROM expenses WHERE id = :id")

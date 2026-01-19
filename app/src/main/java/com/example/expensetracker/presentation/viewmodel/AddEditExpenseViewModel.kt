@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 
@@ -109,6 +110,16 @@ class AddEditExpenseViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(isIncome = isIncome)
     }
 
+    private fun getStartOfDay(date: Date): Date {
+        val calendar = Calendar.getInstance()
+        calendar.time = date
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.time
+    }
+
     fun saveExpense(onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
@@ -123,7 +134,7 @@ class AddEditExpenseViewModel @Inject constructor(
                     )
                     return@launch
                 }
-
+                val normalizedDate = getStartOfDay(state.date)
                 val amount = state.amount.toDouble()
                 val expense = if (state.isEditMode) {
                     Expense(
@@ -131,7 +142,7 @@ class AddEditExpenseViewModel @Inject constructor(
                         title = state.title.trim(),
                         amount = amount,
                         category = state.category,
-                        date = state.date,
+                        date = normalizedDate,
                         description = state.description.trim().ifBlank { null },
                         isIncome = state.isIncome
                     )
@@ -140,7 +151,7 @@ class AddEditExpenseViewModel @Inject constructor(
                         title = state.title.trim(),
                         amount = amount,
                         category = state.category,
-                        date = state.date,
+                        date = normalizedDate,
                         description = state.description.trim().ifBlank { null },
                         isIncome = state.isIncome
                     )
