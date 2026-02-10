@@ -1,6 +1,7 @@
 package com.example.expensetracker.presentation.navigation
 
 sealed class Screen(val route: String) {
+    object Splash : Screen("splash_screen")
     data object ExpenseList : Screen("expense_list")
     data object AddExpense : Screen("add_expense")
     data object Stats : Screen("stats")

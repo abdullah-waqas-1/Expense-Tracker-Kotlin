@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.example.expensetracker.presentation.ui.screen.StatsScreen
 import com.example.expensetracker.presentation.ui.screen.AddEditExpenseScreen
 import com.example.expensetracker.presentation.ui.screen.ExpenseListScreen
+import com.example.expensetracker.presentation.ui.screen.SplashScreen
 
 @Composable
 fun ExpenseTrackerNavGraph(
@@ -17,20 +18,24 @@ fun ExpenseTrackerNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.ExpenseList.route
+        startDestination = Screen.Splash.route
     ) {
+
+        composable(route = Screen.Splash.route) {
+            SplashScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.ExpenseList.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
 
         composable(route = Screen.ExpenseList.route) {
             ExpenseListScreen(
-                onNavigateToAddExpense = {
-                    navController.navigate(Screen.AddExpense.route)
-                },
-                onNavigateToEditExpense = { expenseId ->
-                    navController.navigate(Screen.EditExpense.createRoute(expenseId))
-                },
-                onNavigateToStats = {
-                    navController.navigate(Screen.Stats.route)
-                }
+                onNavigateToAddExpense = { navController.navigate(Screen.AddExpense.route) },
+                onNavigateToEditExpense = { expenseId -> navController.navigate(Screen.EditExpense.createRoute(expenseId)) },
+                onNavigateToStats = { navController.navigate(Screen.Stats.route) }
             )
         }
 
