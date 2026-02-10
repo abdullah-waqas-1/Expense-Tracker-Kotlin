@@ -3,13 +3,21 @@ package com.example.expensetracker.presentation.ui.component
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +32,7 @@ import com.example.expensetracker.ui.theme.*
 @SuppressLint("DefaultLocale")
 @Composable
 fun BalanceCard(balance: Double, income: Double, expenses: Double) {
+    var isVisible by remember { mutableStateOf(true) }
     Card(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         shape = RoundedCornerShape(28.dp),
@@ -41,13 +50,29 @@ fun BalanceCard(balance: Double, income: Double, expenses: Double) {
                 drawCircle(Color.White.copy(alpha = 0.05f), radius = 300f, center = Offset(0f, size.height))
             }
             Column(modifier = Modifier.padding(24.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Total Balance",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+
+                    // The Toggle Button
+                    Icon(
+                        imageVector = if (isVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = "Toggle Balance Visibility",
+                        tint = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .clickable { isVisible = !isVisible }
+                    )
+                }
                 Text(
-                    text = "Total Balance",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White.copy(alpha = 0.8f)
-                )
-                Text(
-                    text = "${String.format("%.2f", balance)} pkr",
+                    text = if (isVisible) "${String.format("%.2f", balance)} pkr" else "******",
                     style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -62,12 +87,14 @@ fun BalanceCard(balance: Double, income: Double, expenses: Double) {
                     StatsItem(
                         label = "Income",
                         amount = income,
+                        isVisible = isVisible,
                         icon = Icons.AutoMirrored.Filled.TrendingUp,
                         contentColor = Color(0xFFC8E6C9)
                     )
                     StatsItem(
                         label = "Expenses",
                         amount = expenses,
+                        isVisible = isVisible,
                         icon = Icons.AutoMirrored.Filled.TrendingDown,
                         contentColor = Color(0xFFFFCDD2)
                     )
@@ -78,7 +105,7 @@ fun BalanceCard(balance: Double, income: Double, expenses: Double) {
 }
 
 @Composable
-private fun StatsItem(label: String, amount: Double, icon: ImageVector, contentColor: Color) {
+private fun StatsItem(label: String, amount: Double, icon: ImageVector, isVisible: Boolean, contentColor: Color) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -95,7 +122,7 @@ private fun StatsItem(label: String, amount: Double, icon: ImageVector, contentC
                 color = Color.White.copy(alpha = 0.7f)
             )
             Text(
-                text = String.format("%.2f", amount),
+                text = if (isVisible) String.format("%.2f", amount) else "******",
                 style = MaterialTheme.typography.titleSmall,
                 color = contentColor,
                 fontWeight = FontWeight.Bold

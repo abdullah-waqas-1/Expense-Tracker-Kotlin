@@ -13,9 +13,7 @@ import com.example.expensetracker.presentation.ui.screen.ExpenseListScreen
 
 @Composable
 fun ExpenseTrackerNavGraph(
-    navController: NavHostController = rememberNavController(),
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit
+    navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
@@ -32,9 +30,7 @@ fun ExpenseTrackerNavGraph(
                 },
                 onNavigateToStats = {
                     navController.navigate(Screen.Stats.route)
-                },
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
+                }
             )
         }
 

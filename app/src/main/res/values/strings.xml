@@ -1,3 +1,59 @@
 <resources>
     <string name="app_name">Expense Tracker</string>
+    <string name="app_short_name">Expenses</string>
+
+    <string name="action_back">Back</string>
+    <string name="action_save">Save Transaction</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_clear_all">Clear All</string>
+    <string name="action_add_transaction">Add Transaction</string>
+    <string name="action_add">Add</string>
+
+    <string name="title_expense_tracker">Expense Tracker</string>
+    <string name="search_hint">Search transactions...</string>
+    <string name="filter_all">All</string>
+    <string name="empty_state_message">No transactions yet</string>
+    <string name="menu_more_options">More Options</string>
+    <string name="menu_clear_all_data">Clear All Data</string>
+    <string name="dialog_clear_all_title">Clear All Transactions?</string>
+    <string name="dialog_clear_all_message">This action cannot be undone. Are you sure you want to delete all history?</string>
+    <string name="error_prefix">Error: </string>
+
+    <string name="label_total_balance">Total Balance</string>
+    <string name="label_income">Income</string>
+    <string name="label_expenses">Expenses</string>
+    <string name="hidden_balance">******</string>
+    <string name="cd_toggle_visibility">Toggle Balance Visibility</string>
+
+    <string name="title_new_transaction">New Transaction</string>
+    <string name="title_edit_transaction">Edit Transaction</string>
+    <string name="tab_expense">Expense</string>
+    <string name="tab_income">Income</string>
+    <string name="label_enter_amount">Enter Amount</string>
+    <string name="label_select_category">Select Category</string>
+    <string name="label_title">Title</string>
+    <string name="hint_title">What is this for?</string>
+    <string name="label_date">Date</string>
+    <string name="label_note">Note</string>
+    <string name="hint_note">Add a description...</string>
+    <string name="validation_title_required">Title is required</string>
+    <string name="validation_amount_invalid">Please enter a valid amount</string>
+    <string name="validation_amount_zero">Amount must be greater than 0</string>
+
+    <string name="title_spending_analysis">Spending Analysis</string>
+    <string name="label_total_spent">Total Spent</string>
+    <string name="title_category_breakdown">Category Breakdown</string>
+    <string name="no_expense_data">No expense data yet</string>
+
+    <string name="dialog_delete_title">Delete Transaction</string>
+    <string name="dialog_delete_message">Are you sure you want to delete this?</string>
+    <string name="dialog_select_date">Select Date</string>
+
+    <string name="cd_back">Back</string>
+    <string name="cd_filter">Filter</string>
+    <string name="cd_stats">Stats</string>
+    <string name="cd_toggle_theme">Toggle Theme</string>
+
 </resources>

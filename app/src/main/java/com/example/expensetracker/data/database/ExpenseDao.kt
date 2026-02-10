@@ -25,8 +25,3 @@ interface ExpenseDao {
     suspend fun deleteAllExpenses()
 
 }
-
-data class CategorySum(
-    val category: String,
-    val total: Double
-)

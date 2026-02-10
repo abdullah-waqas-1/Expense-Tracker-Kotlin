@@ -1,20 +1,23 @@
 package com.example.expensetracker.ui.theme
 
 import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+
+interface ThemeManager {
+    val isDark: Boolean
+    fun toggleTheme()
+}
+
+val LocalThemeManager = staticCompositionLocalOf<ThemeManager> {
+    error("No ThemeManager provided")
+}
 
 private val LightLivelyColorScheme = lightColorScheme(
     primary = BrandPurple,
@@ -25,7 +28,8 @@ private val LightLivelyColorScheme = lightColorScheme(
     onSurface = TextPrimary,
     onSurfaceVariant = TextSecondary,
     outlineVariant = DividerColor,
-    error = ExpenseRed
+    error = ExpenseRed,
+    tertiary = IncomeGreen
 )
 
 private val DarkLivelyColorScheme = darkColorScheme(
@@ -37,16 +41,25 @@ private val DarkLivelyColorScheme = darkColorScheme(
     onSurface = TextPrimaryDark,
     onSurfaceVariant = TextSecondaryDark,
     outlineVariant = DividerColorDark,
-    error = ExpenseRed
+    error = ExpenseRed,
+    tertiary = IncomeGreen
 )
 
 @Composable
 fun ExpenseTrackerTheme(
-    darkTheme: Boolean, // No default, forced from MainActivity
+    darkTheme: Boolean,
+    onToggle: () -> Unit,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkLivelyColorScheme else LightLivelyColorScheme
     val view = LocalView.current
+
+    val themeManager = remember(darkTheme) {
+        object : ThemeManager {
+            override val isDark = darkTheme
+            override fun toggleTheme() = onToggle()
+        }
+    }
 
     if (!view.isInEditMode) {
         SideEffect {
@@ -60,9 +73,11 @@ fun ExpenseTrackerTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(LocalThemeManager provides themeManager) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

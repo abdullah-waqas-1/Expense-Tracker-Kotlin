@@ -5,22 +5,23 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.expensetracker.data.model.expenseCategories
-import com.example.expensetracker.data.model.incomeCategories
+import com.example.expensetracker.R
 import com.example.expensetracker.presentation.viewmodel.ExpenseListViewModel
 import com.example.expensetracker.presentation.ui.component.*
+import com.example.expensetracker.ui.theme.LocalThemeManager
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,10 +31,9 @@ fun ExpenseListScreen(
     onNavigateToAddExpense: () -> Unit,
     onNavigateToEditExpense: (Long) -> Unit,
     onNavigateToStats: () -> Unit,
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit,
     viewModel: ExpenseListViewModel = hiltViewModel()
 ) {
+    val themeManager = LocalThemeManager.current
     val expenses by viewModel.expenses.collectAsState()
     val stats by viewModel.expenseStats.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -43,11 +43,12 @@ fun ExpenseListScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val dateFormat = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
+
     if (showDeleteAllDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteAllDialog = false },
-            title = { Text("Clear All Transactions?") },
-            text = { Text("This action cannot be undone. Are you sure you want to delete all history?") },
+            title = { Text(stringResource(R.string.dialog_clear_all_title)) },
+            text = { Text(stringResource(R.string.dialog_clear_all_message)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -56,12 +57,12 @@ fun ExpenseListScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Clear All", color = MaterialTheme.colorScheme.onError)
+                    Text(stringResource(R.string.action_clear_all), color = MaterialTheme.colorScheme.onError)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteAllDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -76,7 +77,7 @@ fun ExpenseListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Expense Tracker",
+                        stringResource(R.string.title_expense_tracker),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -89,26 +90,25 @@ fun ExpenseListScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 actions = {
-                    IconButton(onClick = onToggleTheme) {
+                    IconButton(onClick = { themeManager.toggleTheme() }) {
                         Icon(
-                            imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                            contentDescription = "Toggle Theme"
+                            imageVector = if (themeManager.isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
+                            contentDescription = stringResource(R.string.cd_toggle_theme)
                         )
                     }
                     IconButton(onClick = { showFilters = !showFilters }) {
                         Icon(
                             Icons.Default.FilterList,
-                            "Filter",
+                            stringResource(R.string.cd_filter),
                             tint = if (searchQuery.isNotEmpty() || selectedCategory != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                     }
                     IconButton(onClick = onNavigateToStats) {
-                        Icon(Icons.Default.Analytics, "Stats")
+                        Icon(Icons.Default.Analytics, stringResource(R.string.cd_stats))
                     }
-
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, "More Options")
+                            Icon(Icons.Default.MoreVert, stringResource(R.string.menu_more_options))
                         }
                         DropdownMenu(
                             expanded = showMenu,
@@ -116,7 +116,7 @@ fun ExpenseListScreen(
                             modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Clear All Data", color = MaterialTheme.colorScheme.error) },
+                                text = { Text(stringResource(R.string.menu_clear_all_data), color = MaterialTheme.colorScheme.error) },
                                 onClick = {
                                     showMenu = false
                                     showDeleteAllDialog = true
@@ -138,9 +138,9 @@ fun ExpenseListScreen(
                 elevation = FloatingActionButtonDefaults.elevation(8.dp),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Add, "Add")
+                Icon(Icons.Default.Add, stringResource(R.string.action_add))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Add Transaction", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.action_add_transaction), fontWeight = FontWeight.SemiBold)
             }
         }
     ) { paddingValues ->
@@ -161,78 +161,16 @@ fun ExpenseListScreen(
                 }
             }
 
-            AnimatedVisibility(
+            ExpenseFilterSection(
                 visible = showFilters,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = { viewModel.setSearchQuery(it) },
-                            placeholder = { Text("Search transactions...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                            modifier = Modifier.fillMaxWidth(),
-                            leadingIcon = { Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary) },
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                cursorColor = MaterialTheme.colorScheme.primary,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            item {
-                                CustomFilterChip(
-                                    selected = selectedCategory == null,
-                                    label = "All",
-                                    onClick = { viewModel.setCategory(null) }
-                                )
-                            }
-                            items(expenseCategories + incomeCategories) { category ->
-                                CustomFilterChip(
-                                    selected = selectedCategory == category.name,
-                                    label = "${category.icon} ${category.name}",
-                                    onClick = {
-                                        if (selectedCategory == category.name) viewModel.setCategory(null)
-                                        else viewModel.setCategory(category.name)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+                searchQuery = searchQuery,
+                onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                selectedCategory = selectedCategory,
+                onCategorySelected = { viewModel.setCategory(it) }
+            )
 
             if (expenses.isEmpty()) {
-                Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.ReceiptLong,
-                            null,
-                            modifier = Modifier.size(80.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "No transactions yet",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                EmptyStateView(Modifier.weight(1f))
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -250,6 +188,29 @@ fun ExpenseListScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun EmptyStateView(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                Icons.AutoMirrored.Filled.ReceiptLong,
+                null,
+                modifier = Modifier.size(80.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                stringResource(R.string.empty_state_message),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
