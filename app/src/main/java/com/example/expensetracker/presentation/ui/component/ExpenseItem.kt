@@ -12,14 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.expensetracker.data.model.Expense
 import com.example.expensetracker.data.model.expenseCategories
 import com.example.expensetracker.data.model.incomeCategories
-import com.example.expensetracker.ui.theme.*
 import java.text.SimpleDateFormat
 
 @SuppressLint("DefaultLocale")
@@ -40,21 +38,21 @@ fun ExpenseItem(
 
     if (showDeleteDialog) {
         AlertDialog(
-            containerColor = CardBackground,
-            titleContentColor = TextPrimary,
-            textContentColor = TextSecondary,
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             onDismissRequest = { showDeleteDialog = false },
             title = { Text("Delete Transaction") },
             text = { Text("Are you sure you want to delete this?") },
             confirmButton = {
                 Button(
                     onClick = { onDelete(); showDeleteDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = ExpenseRed)
-                ) { Text("Delete", color = Color.White) }
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Delete", color = MaterialTheme.colorScheme.onError) }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel", color = TextSecondary)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -65,7 +63,9 @@ fun ExpenseItem(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -77,8 +77,8 @@ fun ExpenseItem(
                     .size(52.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(
-                        if (expense.isIncome) IncomeGreen.copy(alpha = 0.1f)
-                        else ExpenseRed.copy(alpha = 0.1f)
+                        if (expense.isIncome) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
+                        else MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -90,25 +90,27 @@ fun ExpenseItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     expense.title,
-                    style = MaterialTheme.typography.titleMedium.copy(color = TextPrimary),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
                     fontWeight = FontWeight.SemiBold
                 )
 
-                // --- ADDED THIS BLOCK TO SHOW THE NOTE ---
                 if (!expense.description.isNullOrBlank()) {
                     Text(
                         text = expense.description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                // -----------------------------------------
 
                 Text(
                     text = dateFormat.format(expense.date),
-                    style = MaterialTheme.typography.labelMedium.copy(color = TextSecondary.copy(alpha = 0.7f)),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    ),
                 )
             }
 
@@ -116,11 +118,16 @@ fun ExpenseItem(
                 "${if (expense.isIncome) "+" else "-"}${String.format("%.0f", expense.amount)}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (expense.isIncome) IncomeGreen else ExpenseRed
+                color = if (expense.isIncome) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
             )
 
             IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.Close, null, tint = TextSecondary.copy(alpha = 0.3f), modifier = Modifier.size(16.dp))
+                Icon(
+                    Icons.Default.Close,
+                    null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -15,41 +16,47 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val LivelyColorScheme = lightColorScheme(
+private val LightLivelyColorScheme = lightColorScheme(
     primary = BrandPurple,
     onPrimary = Color.White,
-    secondary = BrandPurpleDark,
-    onSecondary = Color.White,
-    tertiary = IncomeGreen,
     background = AppBackground,
     surface = CardBackground,
-    onSurface = TextPrimary,
     onBackground = TextPrimary,
+    onSurface = TextPrimary,
+    onSurfaceVariant = TextSecondary,
+    outlineVariant = DividerColor,
+    error = ExpenseRed
+)
+
+private val DarkLivelyColorScheme = darkColorScheme(
+    primary = BrandPurpleLight,
+    onPrimary = Color.Black,
+    background = AppBackgroundDark,
+    surface = CardBackgroundDark,
+    onBackground = TextPrimaryDark,
+    onSurface = TextPrimaryDark,
+    onSurfaceVariant = TextSecondaryDark,
+    outlineVariant = DividerColorDark,
     error = ExpenseRed
 )
 
 @Composable
 fun ExpenseTrackerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    darkTheme: Boolean, // No default, forced from MainActivity
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        else -> LivelyColorScheme
-    }
-
+    val colorScheme = if (darkTheme) DarkLivelyColorScheme else LightLivelyColorScheme
     val view = LocalView.current
+
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor= AppBackground.toArgb()
-            window.navigationBarColor = AppBackground.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = true
+            window.statusBarColor = colorScheme.background.toArgb()
+            window.navigationBarColor = colorScheme.background.toArgb()
+
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            insetsController.isAppearanceLightStatusBars = !darkTheme
+            insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 

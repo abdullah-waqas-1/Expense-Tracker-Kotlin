@@ -93,6 +93,20 @@ class ExpenseListViewModel @Inject constructor(
         }
     }
 
+    fun clearAllExpenses() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                _error.value = null
+                repository.deleteAllExpenses()
+            } catch (e: Exception) {
+                _error.value = "Failed to clear transactions: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun setDateRange(startDate: Date?, endDate: Date?) {
         _selectedDateRange.value = startDate to endDate
     }

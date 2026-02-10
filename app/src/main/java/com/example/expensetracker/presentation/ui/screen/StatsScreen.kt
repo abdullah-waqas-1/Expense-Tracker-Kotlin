@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.expensetracker.presentation.viewmodel.ExpenseListViewModel
-import com.example.expensetracker.ui.theme.*
 import com.example.expensetracker.presentation.ui.component.DonutChart
 import com.example.expensetracker.presentation.ui.component.CategoryLegendItem
 
@@ -31,7 +30,6 @@ fun StatsScreen(
     viewModel: ExpenseListViewModel = hiltViewModel()
 ) {
     val stats by viewModel.expenseStats.collectAsState()
-
     var animationPlayed by remember { mutableStateOf(false) }
     val animFloat by animateFloatAsState(
         targetValue = if (animationPlayed) 1f else 0f,
@@ -44,7 +42,7 @@ fun StatsScreen(
     }
 
     Scaffold(
-        containerColor = AppBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Column(
                 modifier = Modifier
@@ -61,14 +59,14 @@ fun StatsScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextSecondary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "Back",
                         style = MaterialTheme.typography.labelLarge,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
@@ -76,7 +74,7 @@ fun StatsScreen(
                     text = "Spending Analysis",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     ),
                     modifier = Modifier.padding(start = 4.dp)
                 )
@@ -94,7 +92,9 @@ fun StatsScreen(
             item {
                 Card(
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -116,13 +116,13 @@ fun StatsScreen(
                             Text(
                                 text = "Total Spent",
                                 style = MaterialTheme.typography.labelLarge,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
                                 text = String.format("%.0f", stats.totalExpenses),
                                 style = MaterialTheme.typography.headlineLarge.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = TextPrimary
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             )
                         }
@@ -135,7 +135,9 @@ fun StatsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground)
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 ) {
                     Column(
                         modifier = Modifier.padding(20.dp),
@@ -145,14 +147,14 @@ fun StatsScreen(
                             "Category Breakdown",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = TextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         if (stats.categoryBreakdown.isEmpty()) {
                             Text(
                                 "No expense data yet",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
                             val sortedData = stats.categoryBreakdown.toList()

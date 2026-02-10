@@ -1,10 +1,8 @@
-package com.example.expensetracker.data
+package com.example.expensetracker.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.expensetracker.data.database.Converters
-import com.example.expensetracker.data.database.ExpenseDao
 import com.example.expensetracker.data.model.Expense
 
 @Database(

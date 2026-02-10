@@ -1,6 +1,5 @@
 package com.example.expensetracker.data.model
 
-
 data class Category(
     val name: String,
     val icon: String,
