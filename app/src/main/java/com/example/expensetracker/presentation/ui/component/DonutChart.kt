@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -14,7 +15,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.expensetracker.data.model.expenseCategories
-import com.example.expensetracker.ui.theme.AppBackground
 
 @Composable
 fun DonutChart(
@@ -31,6 +31,8 @@ fun DonutChart(
         }
     }
 
+    val trackColor = MaterialTheme.colorScheme.background
+
     Box(modifier = Modifier.size(280.dp)) {
         Canvas(
             modifier = Modifier
@@ -38,7 +40,7 @@ fun DonutChart(
                 .rotate(-90f)
         ) {
             drawCircle(
-                color = AppBackground,
+                color = trackColor,
                 style = Stroke(width = thickness.toPx(), cap = StrokeCap.Round)
             )
 

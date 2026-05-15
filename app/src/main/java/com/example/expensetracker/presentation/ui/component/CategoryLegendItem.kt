@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.expensetracker.data.model.expenseCategories
-import com.example.expensetracker.ui.theme.AppBackground
 import com.example.expensetracker.ui.theme.TextPrimary
 
 @SuppressLint("DefaultLocale")
@@ -56,7 +55,7 @@ fun CategoryLegendItem(
                     text = category,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = String.format("%.0f", amount),
@@ -73,7 +72,7 @@ fun CategoryLegendItem(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(AppBackground)
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 Box(
                     modifier = Modifier
