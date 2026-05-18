@@ -1,10 +1,10 @@
 package com.example.expensetracker
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.expensetracker.data.local.ThemePreferences
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     @Inject
     lateinit var themePreferences: ThemePreferences
     override fun onCreate(savedInstanceState: Bundle?) {

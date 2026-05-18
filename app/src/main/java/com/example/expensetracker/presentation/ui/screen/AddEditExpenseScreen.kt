@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,8 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.expensetracker.R
 import com.example.expensetracker.presentation.viewmodel.AddEditExpenseViewModel
 import com.example.expensetracker.presentation.ui.component.*
-import java.text.SimpleDateFormat
-import java.util.*
+import com.example.expensetracker.util.AppDateUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +37,6 @@ fun AddEditExpenseScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
-    val dateFormat = remember { SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -96,6 +95,27 @@ fun AddEditExpenseScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+            AnimatedVisibility(visible = uiState.error != null) {
+                uiState.error?.let { textError ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = textError.asString(),
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -177,7 +197,7 @@ fun AddEditExpenseScreen(
                             style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                         Text(
-                            dateFormat.format(uiState.date),
+                            text = AppDateUtils.formatDate(uiState.date, "MMMM dd, yyyy"),
                             style = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                         )
                     }

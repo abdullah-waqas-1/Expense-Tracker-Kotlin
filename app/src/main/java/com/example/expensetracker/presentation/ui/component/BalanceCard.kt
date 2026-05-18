@@ -14,10 +14,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,8 +27,7 @@ import com.example.expensetracker.ui.theme.*
 
 @SuppressLint("DefaultLocale")
 @Composable
-fun BalanceCard(balance: Double, income: Double, expenses: Double) {
-    var isVisible by remember { mutableStateOf(true) }
+fun BalanceCard(balance: Double, income: Double, expenses: Double, isVisible: Boolean, onToggleVisibility: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         shape = RoundedCornerShape(28.dp),
@@ -60,7 +55,6 @@ fun BalanceCard(balance: Double, income: Double, expenses: Double) {
                         color = Color.White.copy(alpha = 0.8f)
                     )
 
-                    // The Toggle Button
                     Icon(
                         imageVector = if (isVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = "Toggle Balance Visibility",
@@ -68,7 +62,7 @@ fun BalanceCard(balance: Double, income: Double, expenses: Double) {
                         modifier = Modifier
                             .size(20.dp)
                             .clip(CircleShape)
-                            .clickable { isVisible = !isVisible }
+                            .clickable { onToggleVisibility() }
                     )
                 }
                 Text(

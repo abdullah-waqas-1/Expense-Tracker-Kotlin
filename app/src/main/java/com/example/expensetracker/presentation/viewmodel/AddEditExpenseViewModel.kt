@@ -1,16 +1,17 @@
-
 package com.example.expensetracker.presentation.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.expensetracker.R
 import com.example.expensetracker.data.model.Expense
 import com.example.expensetracker.data.repository.ExpenseRepository
+import com.example.expensetracker.util.AppDateUtils
+import com.example.expensetracker.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 
@@ -20,14 +21,13 @@ class AddEditExpenseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val expenseId: Long =
-        savedStateHandle.get<Long>("expenseId") ?: -1L
+    private val expenseId: Long = savedStateHandle.get<Long>("expenseId") ?: -1L
 
     private val _uiState = MutableStateFlow(AddEditExpenseUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        if (expenseId != 0L) {
+        if (expenseId != 0L && expenseId != -1L) {
             loadExpense()
         }
     }
@@ -50,13 +50,13 @@ class AddEditExpenseViewModel @Inject constructor(
                     )
                 } ?: run {
                     _uiState.value = _uiState.value.copy(
-                        error = "Expense not found",
+                        error = UiText.StringResource(R.string.error_expense_not_found),
                         isLoading = false
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = "Failed to load expense: ${e.message}",
+                    error = UiText.DynamicString(e.message ?: "Unknown database error"),
                     isLoading = false
                 )
             }
@@ -71,7 +71,6 @@ class AddEditExpenseViewModel @Inject constructor(
     }
 
     fun updateAmount(amount: String) {
-
         val isValid = amount.isEmpty() ||
                 amount.matches(Regex("^\\d*\\.?\\d*$")) &&
                 amount.count { it == '.' } <= 1 &&
@@ -110,16 +109,6 @@ class AddEditExpenseViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(isIncome = isIncome)
     }
 
-    private fun getStartOfDay(date: Date): Date {
-        val calendar = Calendar.getInstance()
-        calendar.time = date
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        return calendar.time
-    }
-
     fun saveExpense(onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
@@ -134,7 +123,8 @@ class AddEditExpenseViewModel @Inject constructor(
                     )
                     return@launch
                 }
-                val normalizedDate = getStartOfDay(state.date)
+
+                val normalizedDate = AppDateUtils.getStartOfDay(state.date)
                 val amount = state.amount.toDouble()
                 val expense = if (state.isEditMode) {
                     Expense(
@@ -168,29 +158,25 @@ class AddEditExpenseViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = "Failed to save: ${e.message}",
+                    error = UiText.DynamicString(e.message ?: "Failed to write data"),
                     isLoading = false
                 )
             }
         }
     }
 
-    private fun validateInput(state: AddEditExpenseUiState): String? {
+    private fun validateInput(state: AddEditExpenseUiState): UiText? {
         return when {
-            state.title.isBlank() -> "Title is required"
-            state.title.length < 2 -> "Title must be at least 2 characters"
-            state.title.length > 100 -> "Title must be less than 100 characters"
-            state.amount.isBlank() -> "Amount is required"
-            state.amount.toDoubleOrNull() == null -> "Please enter a valid amount"
-            state.amount.toDouble() <= 0 -> "Amount must be greater than 0"
-            state.amount.toDouble() > 1_000_000 -> "Amount seems too large"
-            state.category.isBlank() -> "Please select a category"
+            state.title.isBlank() -> UiText.StringResource(R.string.err_title_required)
+            state.title.length < 2 -> UiText.StringResource(R.string.err_title_too_short)
+            state.title.length > 100 -> UiText.StringResource(R.string.err_title_too_long)
+            state.amount.isBlank() -> UiText.StringResource(R.string.err_amount_required)
+            state.amount.toDoubleOrNull() == null -> UiText.StringResource(R.string.err_amount_invalid)
+            state.amount.toDouble() <= 0 -> UiText.StringResource(R.string.err_amount_zero)
+            state.amount.toDouble() > 1_000_000 -> UiText.StringResource(R.string.err_amount_too_large)
+            state.category.isBlank() -> UiText.StringResource(R.string.err_category_required)
             else -> null
         }
-    }
-
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
     }
 }
 
@@ -203,5 +189,5 @@ data class AddEditExpenseUiState(
     val isIncome: Boolean = false,
     val isEditMode: Boolean = false,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: UiText? = null
 )

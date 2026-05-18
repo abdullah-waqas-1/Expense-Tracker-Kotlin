@@ -32,6 +32,8 @@ fun DonutChart(
     }
 
     val trackColor = MaterialTheme.colorScheme.background
+    val fallbackSegmentColor = MaterialTheme.colorScheme.outline
+    val emptyStateTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
 
     Box(modifier = Modifier.size(280.dp)) {
         Canvas(
@@ -39,9 +41,14 @@ fun DonutChart(
                 .fillMaxSize()
                 .rotate(-90f)
         ) {
+            val strokeWidthPx = thickness.toPx()
+
+            val sharedRoundStroke = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
+            val sharedButtStroke = Stroke(width = strokeWidthPx, cap = StrokeCap.Butt)
+
             drawCircle(
                 color = trackColor,
-                style = Stroke(width = thickness.toPx(), cap = StrokeCap.Round)
+                style = sharedRoundStroke
             )
 
             if (totalAmount > 0) {
@@ -50,18 +57,18 @@ fun DonutChart(
                     val sweepAngle = (amount.toFloat() / totalAmount.toFloat()) * 360f * animationProgress
 
                     drawArc(
-                        color = colors[category] ?: Color.Gray,
+                        color = colors[category] ?: fallbackSegmentColor,
                         startAngle = startAngle,
                         sweepAngle = sweepAngle,
                         useCenter = false,
-                        style = Stroke(width = thickness.toPx(), cap = StrokeCap.Butt)
+                        style = sharedButtStroke
                     )
                     startAngle += sweepAngle
                 }
             } else {
                 drawCircle(
-                    color = Color.LightGray.copy(alpha = 0.2f),
-                    style = Stroke(width = thickness.toPx(), cap = StrokeCap.Round)
+                    color = emptyStateTrackColor,
+                    style = sharedRoundStroke
                 )
             }
         }

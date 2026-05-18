@@ -1,45 +1,46 @@
-
 package com.example.expensetracker.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.expensetracker.data.local.ThemePreferences
 import com.example.expensetracker.data.model.Expense
 import com.example.expensetracker.data.model.ExpenseStats
 import com.example.expensetracker.data.repository.ExpenseRepository
+import com.example.expensetracker.util.CsvExportHelper
+import com.example.expensetracker.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
 class ExpenseListViewModel @Inject constructor(
-    private val repository: ExpenseRepository
+    private val repository: ExpenseRepository,
+    private val themePreferences: ThemePreferences
 ) : ViewModel() {
 
-    private val _selectedDateRange = MutableStateFlow<Pair<Date?, Date?>>(null to null)
     private val _selectedCategory = MutableStateFlow<String?>(null)
     private val _searchQuery = MutableStateFlow("")
-    private val _isLoading = MutableStateFlow(false)
-    private val _error = MutableStateFlow<String?>(null)
+    private val _error = MutableStateFlow<UiText?>(null)
 
     val searchQuery = _searchQuery.asStateFlow()
     val selectedCategory = _selectedCategory.asStateFlow()
-    val selectedDateRange = _selectedDateRange.asStateFlow()
-    val isLoading = _isLoading.asStateFlow()
     val error = _error.asStateFlow()
+
+    val isBalanceVisible = themePreferences.isBalanceVisible
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
 
     val expenses = combine(
         repository.getAllExpenses(),
-        _selectedDateRange,
         _selectedCategory,
         _searchQuery
-    ) { expenses, dateRange, category, query ->
+    ) { expenses, category, query ->
         expenses.filter { expense ->
-            val matchesDateRange = if (dateRange.first != null && dateRange.second != null) {
-                expense.date >= dateRange.first && expense.date <= dateRange.second
-            } else true
-
             val matchesCategory = category?.let { expense.category == it } ?: true
 
             val matchesSearch = query.isEmpty() ||
@@ -47,10 +48,10 @@ class ExpenseListViewModel @Inject constructor(
                     expense.description?.contains(query, ignoreCase = true) == true ||
                     expense.category.contains(query, ignoreCase = true)
 
-            matchesDateRange && matchesCategory && matchesSearch
+            matchesCategory && matchesSearch
         }
     }.catch { throwable ->
-        _error.value = "Failed to load expenses: ${throwable.message}"
+        _error.value = UiText.DynamicString(throwable.message ?: throwable.toString())
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -79,16 +80,19 @@ class ExpenseListViewModel @Inject constructor(
         ExpenseStats(0.0, 0.0, 0.0, emptyMap())
     )
 
+    fun toggleBalanceVisibility() {
+        viewModelScope.launch {
+            themePreferences.saveBalanceVisibility(!isBalanceVisible.value)
+        }
+    }
+
     fun deleteExpense(expense: Expense) {
         viewModelScope.launch {
             try {
-                _isLoading.value = true
                 _error.value = null
                 repository.deleteExpense(expense)
             } catch (e: Exception) {
-                _error.value = "Failed to delete expense: ${e.message}"
-            } finally {
-                _isLoading.value = false
+                _error.value = UiText.DynamicString(e.message ?: e.toString())
             }
         }
     }
@@ -96,19 +100,21 @@ class ExpenseListViewModel @Inject constructor(
     fun clearAllExpenses() {
         viewModelScope.launch {
             try {
-                _isLoading.value = true
                 _error.value = null
                 repository.deleteAllExpenses()
             } catch (e: Exception) {
-                _error.value = "Failed to clear transactions: ${e.message}"
-            } finally {
-                _isLoading.value = false
+                _error.value = UiText.DynamicString(e.message ?: e.toString())
             }
         }
     }
 
-    fun setDateRange(startDate: Date?, endDate: Date?) {
-        _selectedDateRange.value = startDate to endDate
+    fun exportAllData(context: Context) {
+        viewModelScope.launch {
+            val allExpenses = repository.getAllExpenses().first()
+            if (allExpenses.isNotEmpty()) {
+                CsvExportHelper.exportExpensesToCsv(context, allExpenses)
+            }
+        }
     }
 
     fun setCategory(category: String?) {
@@ -117,15 +123,5 @@ class ExpenseListViewModel @Inject constructor(
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
-    }
-
-    fun clearError() {
-        _error.value = null
-    }
-
-    fun clearAllFilters() {
-        _selectedDateRange.value = null to null
-        _selectedCategory.value = null
-        _searchQuery.value = ""
     }
 }

@@ -17,55 +17,92 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.expensetracker.ui.theme.*
-import java.text.SimpleDateFormat
+import com.example.expensetracker.R
+import com.example.expensetracker.util.AppDateUtils
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomDatePickerDialog(
     onDateSelected: (Date) -> Unit,
     onDismiss: () -> Unit,
     initialDate: Date = Date()
 ) {
-    val calendar = Calendar.getInstance()
-    calendar.time = initialDate
-    var selectedDate by remember { mutableStateOf(calendar.time) }
-    val dateFormatter = remember { SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()) }
+    var selectedDate by remember { mutableStateOf(initialDate) }
+
+    val formattedDisplayDate = remember(selectedDate) {
+        AppDateUtils.formatDate(selectedDate, "MMMM dd, yyyy")
+    }
 
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Card(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Select Date", style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextSecondary))
+                Text(
+                    text = stringResource(R.string.label_select_date),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(dateFormatter.format(selectedDate), style = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold, color = TextPrimary))
+                Text(
+                    text = formattedDisplayDate,
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
                 Spacer(modifier = Modifier.height(24.dp))
 
-                SimpleDatePicker(selectedDate = selectedDate, onDateSelected = { selectedDate = it })
+                SimpleDatePicker(
+                    selectedDate = selectedDate,
+                    onDateSelected = { selectedDate = it }
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDismiss) { Text("Cancel", color = TextSecondary) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(
+                            text = stringResource(R.string.action_cancel),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = { onDateSelected(selectedDate) },
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
                         shape = RoundedCornerShape(12.dp)
-                    ) { Text("Confirm", color = Color.White) }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.action_confirm),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }
@@ -77,11 +114,16 @@ fun SimpleDatePicker(
     selectedDate: Date,
     onDateSelected: (Date) -> Unit
 ) {
-    val calendar = Calendar.getInstance()
-    calendar.time = selectedDate
-    var currentMonth by remember { mutableStateOf(calendar.get(Calendar.MONTH)) }
-    var currentYear by remember { mutableStateOf(calendar.get(Calendar.YEAR)) }
-    val monthNames = remember { listOf("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December") }
+    val initialCalendar = remember(selectedDate) {
+        Calendar.getInstance().apply { time = selectedDate }
+    }
+    var currentMonth by remember { mutableStateOf(initialCalendar.get(Calendar.MONTH)) }
+    var currentYear by remember { mutableStateOf(initialCalendar.get(Calendar.YEAR)) }
+
+    val monthHeaderLabel = remember(currentMonth, currentYear) {
+        val tempCal = Calendar.getInstance().apply { set(currentYear, currentMonth, 1) }
+        AppDateUtils.formatDate(tempCal.time, "MMMM yyyy")
+    }
 
     Column {
         Row(
@@ -89,30 +131,69 @@ fun SimpleDatePicker(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { if (currentMonth == 0) { currentMonth = 11; currentYear-- } else currentMonth-- }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = TextSecondary)
+            IconButton(
+                onClick = {
+                    if (currentMonth == 0) {
+                        currentMonth = 11
+                        currentYear--
+                    } else currentMonth--
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-            Text("$currentYear ${monthNames[currentMonth]}", style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary))
-            IconButton(onClick = { if (currentMonth == 11) { currentMonth = 0; currentYear++ } else currentMonth++ }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = TextSecondary, modifier = Modifier.rotate(180f))
+            Text(
+                text = monthHeaderLabel,
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            )
+            IconButton(
+                onClick = {
+                    if (currentMonth == 11) {
+                        currentMonth = 0
+                        currentYear++
+                    } else currentMonth++
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.rotate(180f)
+                )
             }
         }
+
         Spacer(modifier = Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
             listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
-                Text(day, style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextSecondary), modifier = Modifier.width(32.dp), textAlign = TextAlign.Center)
+                Text(
+                    text = day,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    modifier = Modifier.width(32.dp),
+                    textAlign = TextAlign.Center
+                )
             }
         }
+
         Spacer(modifier = Modifier.height(8.dp))
 
         val dates = remember(currentMonth, currentYear) {
-            val cal = Calendar.getInstance()
-            cal.set(currentYear, currentMonth, 1)
-            val firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
-            cal.add(Calendar.DAY_OF_MONTH, -(firstDayOfWeek - 1))
-            val list = mutableListOf<Date>()
-            repeat(42) { list.add(cal.time); cal.add(Calendar.DAY_OF_MONTH, 1) }
-            list
+            AppDateUtils.generateCalendarMonthGrid(currentYear, currentMonth)
         }
 
         LazyVerticalGrid(
@@ -122,33 +203,35 @@ fun SimpleDatePicker(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(dates) { date ->
-                val dayCal = Calendar.getInstance().apply { time = date }
-                val isSelected = isSameDay(date, selectedDate)
+                val dayCal = remember(date) { Calendar.getInstance().apply { time = date } }
+                val isSelected = AppDateUtils.isSameDay(date, selectedDate)
                 val isCurrentMonth = dayCal.get(Calendar.MONTH) == currentMonth
-                val isToday = isSameDay(date, Date())
+                val isToday = AppDateUtils.isSameDay(date, Date())
 
                 Box(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
-                        .background(when {
-                            isSelected -> BrandPurple
-                            isToday -> BrandPurple.copy(alpha = 0.1f)
-                            else -> Color.Transparent
-                        })
+                        .background(
+                            when {
+                                isSelected -> MaterialTheme.colorScheme.primary
+                                isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                else -> Color.Transparent
+                            }
+                        )
                         .clickable { onDateSelected(date) },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        dayCal.get(Calendar.DAY_OF_MONTH).toString(),
+                        text = dayCal.get(Calendar.DAY_OF_MONTH).toString(),
                         style = TextStyle(
                             fontSize = 14.sp,
                             fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
                             color = when {
-                                isSelected -> Color.White
-                                !isCurrentMonth -> Color.LightGray
-                                isToday -> BrandPurple
-                                else -> TextPrimary
+                                isSelected -> MaterialTheme.colorScheme.onPrimary
+                                !isCurrentMonth -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                                isToday -> MaterialTheme.colorScheme.primary
+                                else -> MaterialTheme.colorScheme.onSurface
                             }
                         )
                     )
@@ -156,11 +239,4 @@ fun SimpleDatePicker(
             }
         }
     }
-}
-
-private fun isSameDay(date1: Date, date2: Date): Boolean {
-    val cal1 = Calendar.getInstance().apply { time = date1 }
-    val cal2 = Calendar.getInstance().apply { time = date2 }
-    return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-            cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
 }

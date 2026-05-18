@@ -85,7 +85,8 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     // Material
     implementation("com.google.android.material:material:1.11.0")
-
+    // Biometric
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
 
 
 }

@@ -12,19 +12,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.expensetracker.R
 import com.example.expensetracker.data.model.Expense
 import com.example.expensetracker.data.model.expenseCategories
 import com.example.expensetracker.data.model.incomeCategories
-import java.text.SimpleDateFormat
+import com.example.expensetracker.util.AppDateUtils
 
 @SuppressLint("DefaultLocale")
 @Composable
 fun ExpenseItem(
     expense: Expense,
-    dateFormat: SimpleDateFormat,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
@@ -42,17 +43,17 @@ fun ExpenseItem(
             titleContentColor = MaterialTheme.colorScheme.onSurface,
             textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Transaction") },
-            text = { Text("Are you sure you want to delete this?") },
+            title = { Text(stringResource(R.string.dialog_delete_title)) },
+            text = { Text(stringResource(R.string.dialog_delete_message)) },
             confirmButton = {
                 Button(
                     onClick = { onDelete(); showDeleteDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Delete", color = MaterialTheme.colorScheme.onError) }
+                ) { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.onError) }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -107,7 +108,7 @@ fun ExpenseItem(
                 }
 
                 Text(
-                    text = dateFormat.format(expense.date),
+                    text = AppDateUtils.formatDate(expense.date, "MMM dd"),
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     ),

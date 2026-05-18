@@ -14,16 +14,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.expensetracker.R
 import com.example.expensetracker.presentation.viewmodel.ExpenseListViewModel
 import com.example.expensetracker.presentation.ui.component.*
 import com.example.expensetracker.ui.theme.LocalThemeManager
-import java.text.SimpleDateFormat
-import java.util.*
+import com.example.expensetracker.util.BiometricHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +35,10 @@ fun ExpenseListScreen(
     viewModel: ExpenseListViewModel = hiltViewModel()
 ) {
     val themeManager = LocalThemeManager.current
+    val context = LocalContext.current
+
+    val activity = remember(context) { context as? FragmentActivity }
+
     val expenses by viewModel.expenses.collectAsState()
     val stats by viewModel.expenseStats.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -42,7 +47,9 @@ fun ExpenseListScreen(
     var showDeleteAllDialog by remember { mutableStateOf(false) }
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
-    val dateFormat = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
+
+    val biometricTitle = stringResource(R.string.biometric_prompt_title)
+    val biometricSubtitle = stringResource(R.string.biometric_prompt_subtitle)
 
     if (showDeleteAllDialog) {
         AlertDialog(
@@ -116,6 +123,17 @@ fun ExpenseListScreen(
                             modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                         ) {
                             DropdownMenuItem(
+                                text = { Text(stringResource(R.string.menu_export_data)) },
+                                onClick = {
+                                    showMenu = false
+                                    viewModel.exportAllData(context)
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Share, null, tint = MaterialTheme.colorScheme.primary)
+                                }
+                            )
+
+                            DropdownMenuItem(
                                 text = { Text(stringResource(R.string.menu_clear_all_data), color = MaterialTheme.colorScheme.error) },
                                 onClick = {
                                     showMenu = false
@@ -146,18 +164,44 @@ fun ExpenseListScreen(
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
 
-            BalanceCard(stats.balance, stats.totalIncome, stats.totalExpenses)
+            val isBalanceVisible by viewModel.isBalanceVisible.collectAsState()
+
+            BalanceCard(
+                balance = stats.balance,
+                income = stats.totalIncome,
+                expenses = stats.totalExpenses,
+                isVisible = isBalanceVisible,
+                onToggleVisibility = {
+                    if (isBalanceVisible) {
+                        viewModel.toggleBalanceVisibility()
+                    } else {
+                        activity?.let { fragmentActivity ->
+                            BiometricHelper.launchAuthentication(
+                                activity = fragmentActivity,
+                                title = biometricTitle,
+                                subtitle = biometricSubtitle,
+                                onSuccess = {
+                                    viewModel.toggleBalanceVisibility()
+                                },
+                                onError = { /* Left clean to ignore casual user dismissal inputs */ }
+                            )
+                        }
+                    }
+                }
+            )
 
             AnimatedVisibility(visible = error != null) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = error ?: "",
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(16.dp)
-                    )
+                error?.let { textError ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = textError.asString(),
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
             }
 
@@ -180,7 +224,6 @@ fun ExpenseListScreen(
                     items(items = expenses, key = { it.id }) { expense ->
                         ExpenseItem(
                             expense = expense,
-                            dateFormat = dateFormat,
                             onClick = { onNavigateToEditExpense(expense.id) },
                             onDelete = { viewModel.deleteExpense(expense) },
                             modifier = Modifier.animateItem(placementSpec = tween(durationMillis = 300))

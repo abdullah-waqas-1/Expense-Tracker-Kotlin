@@ -20,15 +20,27 @@ class ThemePreferences @Inject constructor(
 ) {
 
     private val THEME_KEY = booleanPreferencesKey("is_dark_theme")
+    private val BALANCE_VISIBILITY_KEY = booleanPreferencesKey("is_balance_visible")
 
     val themeMode: Flow<Boolean?> = context.dataStore.data
         .map { preferences ->
             preferences[THEME_KEY]
         }
 
+    val isBalanceVisible: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[BALANCE_VISIBILITY_KEY] ?: true
+        }
+
     suspend fun saveTheme(isDark: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[THEME_KEY] = isDark
+        }
+    }
+
+    suspend fun saveBalanceVisibility(isVisible: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[BALANCE_VISIBILITY_KEY] = isVisible
         }
     }
 }
