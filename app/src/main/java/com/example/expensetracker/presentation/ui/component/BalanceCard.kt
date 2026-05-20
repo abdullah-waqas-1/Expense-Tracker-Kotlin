@@ -29,7 +29,8 @@ import com.example.expensetracker.ui.theme.*
 @Composable
 fun BalanceCard(balance: Double, income: Double, expenses: Double, isVisible: Boolean, onToggleVisibility: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = Modifier.fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, bottom = 5.dp, top = 5.dp),
         shape = RoundedCornerShape(28.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {

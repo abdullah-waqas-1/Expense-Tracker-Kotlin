@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -63,12 +64,7 @@ fun AddEditExpenseScreen(
                     enabled = uiState.title.isNotBlank() && uiState.amount.isNotBlank(),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
-                        .shadow(
-                            8.dp,
-                            RoundedCornerShape(16.dp),
-                            spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                        ),
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
